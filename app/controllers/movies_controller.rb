@@ -7,9 +7,21 @@ class MoviesController < ApplicationController
     end
   
     def index
-      @all_ratings = Movie.all_ratings
+      session[:sort_key] = params[:sort_key] if params[:sort_key]
+      session[:ratings] = params[:ratings] if params[:ratings] 
 
-      
+      if (!params[:sort_key] && !params[:ratings]) && (session[:sort_key] && session[:ratings])
+        flash.keep
+        return redirect_to movies_path(sort_key: session[:sort_key], ratings: session[:ratings])
+      elsif !params[:sort_key] && session[:sort_key]
+        flash.keep
+        return redirect_to movies_path(sort_key: session[:sort_key], ratings: params[:ratings])
+      elsif !params[:ratings] && session[:ratings]
+        flash.keep
+        return redirect_to movies_path(sort_key: params[:sort_key], ratings: session[:ratings])
+      end
+
+      @all_ratings = Movie.all_ratings
       if params[:ratings]
         @ratings_to_show = params[:ratings].keys
         @movies = Movie.where(rating: @ratings_to_show)
